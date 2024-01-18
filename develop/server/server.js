@@ -4,30 +4,32 @@ const path = require('path');
 const db = require('./config/connection');
 const routes = require('./routes');
 
-// import apollo server, express middlewear, and authMiddleWear
+// import apollo server, express middleware, and authMiddleWare
 const { ApolloServer } = require('@apollo/server');
-const { expressMiddleWear } = require('@apollo/server/express4');
-const { authMiddleWear} = require('./utils/auth');
+const { expressMiddleWare } = require('@apollo/server/express4');
+const { authMiddleWare} = require('./utils/auth');
 
 //import type defs and resolvers
 const { typeDefs, resolvers } = require('./schemas');
 
 const PORT = process.env.PORT || 3001;
-const app = express();
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  context: authMiddleWare
 });
+
+const app = express();
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // Create a new instance of an apollo server with the graphQL schema
 const startApolloServer = async () => {
   await server.start();
 
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
 
-  app.use('/graphql', expressMiddleWear(server, {
-    context: authMiddleWear
+  app.use('/graphql', expressMiddleWare(server, {
+    context: authMiddleWare
   }));
 
   // if we're in production, serve client/build as static assets
