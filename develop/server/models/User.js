@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 // import schema from Book.js
 const bookSchema = require('./Book');
 
+// create user schema
 const userSchema = new Schema(
   {
     username: {
@@ -32,17 +33,17 @@ const userSchema = new Schema(
   }
 );
 
-// hash user password
+// create password using pre-save middlewear
 userSchema.pre('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
-    this.password = await bcrypt.hash(this.password, saltRounds);
+    this.password = await bcrypt.hash(this.password, saltRounds); // <--- hash user password w/ bcrypt.
   }
 
   next();
 });
 
-// custom method to compare and validate password for logging in
+// compare incoming password with user's hashed password using bcrypt
 userSchema.methods.isCorrectPassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
